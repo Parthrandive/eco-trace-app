@@ -5,7 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Car, Home, UtensilsCrossed, ShoppingCart, Calculator, Leaf } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Car, Home, UtensilsCrossed, ShoppingCart, Calculator, Leaf, Globe, Zap } from "lucide-react";
+import AchievementSystem from "./AchievementSystem";
+import CarbonOffset from "./CarbonOffset";
+import EmissionCharts from "./EmissionCharts";
+import DetailedTips from "./DetailedTips";
 
 interface EmissionData {
   transport: number;
@@ -75,13 +80,23 @@ const CarbonCalculator = () => {
   const progressPercentage = Math.min((totalEmissions / averageAnnual) * 100, 100);
 
   const getEmissionLevel = () => {
-    if (totalEmissions < 8000) return { level: "Excellent", color: "success" };
-    if (totalEmissions < 16000) return { level: "Good", color: "primary" };
-    if (totalEmissions < 24000) return { level: "Average", color: "warning" };
-    return { level: "High", color: "destructive" };
+    if (totalEmissions < 6000) return { level: "Excellent", color: "success", description: "Well below global average!" };
+    if (totalEmissions < 12000) return { level: "Good", color: "primary", description: "Below global average" };
+    if (totalEmissions < 18000) return { level: "Average", color: "warning", description: "Around global average" };
+    return { level: "High", color: "destructive", description: "Above global average" };
   };
 
   const emissionLevel = getEmissionLevel();
+
+  // Country comparison data
+  const countryAverages = [
+    { country: "Qatar", emissions: 37000 },
+    { country: "United States", emissions: 16000 },
+    { country: "Germany", emissions: 9000 },
+    { country: "China", emissions: 7000 },
+    { country: "Global Average", emissions: 4800 },
+    { country: "India", emissions: 1900 }
+  ];
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
@@ -259,108 +274,110 @@ const CarbonCalculator = () => {
       </div>
 
       {totalEmissions > 0 && (
-        <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20 animate-slide-up">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Leaf className="w-6 h-6" />
-              Your Carbon Footprint Results
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">
-                {totalEmissions.toFixed(1)} kg CO₂
+        <div className="space-y-6">
+          <Card className="bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20 animate-slide-up">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-primary">
+                <Leaf className="w-6 h-6" />
+                Your Carbon Footprint Results
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-center">
+                <div className="text-5xl font-bold text-primary mb-2 animate-scale-in">
+                  {totalEmissions.toFixed(1)} kg CO₂
+                </div>
+                <div className="text-lg text-muted-foreground">per year</div>
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mt-3 animate-pulse ${
+                  emissionLevel.color === 'success' ? 'bg-success/10 text-success' :
+                  emissionLevel.color === 'primary' ? 'bg-primary/10 text-primary' :
+                  emissionLevel.color === 'warning' ? 'bg-warning/10 text-warning' :
+                  'bg-destructive/10 text-destructive'
+                }`}>
+                  <span className="w-2 h-2 rounded-full bg-current"></span>
+                  {emissionLevel.level} - {emissionLevel.description}
+                </div>
               </div>
-              <div className="text-lg text-muted-foreground">per year</div>
-              <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium mt-2 ${
-                emissionLevel.color === 'success' ? 'bg-success/10 text-success' :
-                emissionLevel.color === 'primary' ? 'bg-primary/10 text-primary' :
-                emissionLevel.color === 'warning' ? 'bg-warning/10 text-warning' :
-                'bg-destructive/10 text-destructive'
-              }`}>
-                {emissionLevel.level}
-              </div>
-            </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-between text-sm">
-                <span>Your footprint vs. global average</span>
-                <span>{progressPercentage.toFixed(0)}%</span>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Your footprint vs. global average</span>
+                  <span>{progressPercentage.toFixed(0)}%</span>
+                </div>
+                <Progress value={progressPercentage} className="h-4" />
+                <div className="text-xs text-muted-foreground text-center">
+                  Global average: {averageAnnual.toLocaleString()} kg CO₂/year
+                </div>
               </div>
-              <Progress value={progressPercentage} className="h-3" />
-              <div className="text-xs text-muted-foreground text-center">
-                Global average: {averageAnnual.toLocaleString()} kg CO₂/year
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-card rounded-lg border">
-                <Car className="w-8 h-8 mx-auto mb-2 text-primary" />
-                <div className="font-semibold">{emissions.transport.toFixed(1)}</div>
-                <div className="text-xs text-muted-foreground">Transport</div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="text-center p-4 bg-card rounded-lg border transition-all duration-200 hover:shadow-card hover:scale-105 animate-slide-up" style={{ animationDelay: '100ms' }}>
+                  <Car className="w-8 h-8 mx-auto mb-2 text-primary" />
+                  <div className="font-semibold text-lg">{emissions.transport.toFixed(1)}</div>
+                  <div className="text-xs text-muted-foreground">Transport</div>
+                  <div className="text-xs text-primary font-medium mt-1">
+                    {((emissions.transport / totalEmissions) * 100).toFixed(0)}%
+                  </div>
+                </div>
+                <div className="text-center p-4 bg-card rounded-lg border transition-all duration-200 hover:shadow-card hover:scale-105 animate-slide-up" style={{ animationDelay: '200ms' }}>
+                  <Home className="w-8 h-8 mx-auto mb-2 text-secondary" />
+                  <div className="font-semibold text-lg">{emissions.energy.toFixed(1)}</div>
+                  <div className="text-xs text-muted-foreground">Energy</div>
+                  <div className="text-xs text-secondary font-medium mt-1">
+                    {((emissions.energy / totalEmissions) * 100).toFixed(0)}%
+                  </div>
+                </div>
+                <div className="text-center p-4 bg-card rounded-lg border transition-all duration-200 hover:shadow-card hover:scale-105 animate-slide-up" style={{ animationDelay: '300ms' }}>
+                  <UtensilsCrossed className="w-8 h-8 mx-auto mb-2 text-accent" />
+                  <div className="font-semibold text-lg">{emissions.food.toFixed(1)}</div>
+                  <div className="text-xs text-muted-foreground">Food</div>
+                  <div className="text-xs text-accent font-medium mt-1">
+                    {((emissions.food / totalEmissions) * 100).toFixed(0)}%
+                  </div>
+                </div>
+                <div className="text-center p-4 bg-card rounded-lg border transition-all duration-200 hover:shadow-card hover:scale-105 animate-slide-up" style={{ animationDelay: '400ms' }}>
+                  <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-warning" />
+                  <div className="font-semibold text-lg">{emissions.lifestyle.toFixed(1)}</div>
+                  <div className="text-xs text-muted-foreground">Lifestyle</div>
+                  <div className="text-xs text-warning font-medium mt-1">
+                    {((emissions.lifestyle / totalEmissions) * 100).toFixed(0)}%
+                  </div>
+                </div>
               </div>
-              <div className="text-center p-3 bg-card rounded-lg border">
-                <Home className="w-8 h-8 mx-auto mb-2 text-secondary" />
-                <div className="font-semibold">{emissions.energy.toFixed(1)}</div>
-                <div className="text-xs text-muted-foreground">Energy</div>
-              </div>
-              <div className="text-center p-3 bg-card rounded-lg border">
-                <UtensilsCrossed className="w-8 h-8 mx-auto mb-2 text-accent" />
-                <div className="font-semibold">{emissions.food.toFixed(1)}</div>
-                <div className="text-xs text-muted-foreground">Food</div>
-              </div>
-              <div className="text-center p-3 bg-card rounded-lg border">
-                <ShoppingCart className="w-8 h-8 mx-auto mb-2 text-warning" />
-                <div className="font-semibold">{emissions.lifestyle.toFixed(1)}</div>
-                <div className="text-xs text-muted-foreground">Lifestyle</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
-      {totalEmissions > 0 && (
-        <Card className="bg-gradient-to-br from-success/5 to-primary/5 border-success/20">
-          <CardHeader>
-            <CardTitle className="text-success">💡 Reduction Tips</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4 text-sm">
-              <div className="space-y-2">
-                <h4 className="font-semibold text-primary">Transport</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Use public transport or bike</li>
-                  <li>• Consider electric vehicles</li>
-                  <li>• Reduce air travel</li>
-                </ul>
+              {/* Country Comparison */}
+              <div className="bg-muted/20 rounded-lg p-4">
+                <h4 className="font-semibold text-primary mb-3 flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  Global Comparison
+                </h4>
+                <div className="space-y-2">
+                  {countryAverages.map((country, index) => (
+                    <div key={country.country} className="flex items-center justify-between text-sm">
+                      <span className={country.country === "Global Average" ? "font-semibold" : ""}>
+                        {country.country}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <span>{country.emissions.toLocaleString()} kg CO₂</span>
+                        {totalEmissions <= country.emissions && (
+                          <Badge variant="outline" className="text-xs bg-success/10 text-success border-success/30">
+                            ✓ Below
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold text-secondary">Energy</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Switch to renewable energy</li>
-                  <li>• Improve home insulation</li>
-                  <li>• Use energy-efficient appliances</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold text-accent">Food</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Reduce meat consumption</li>
-                  <li>• Choose local, seasonal produce</li>
-                  <li>• Minimize food waste</li>
-                </ul>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-semibold text-warning">Lifestyle</h4>
-                <ul className="space-y-1 text-muted-foreground">
-                  <li>• Buy less, choose quality</li>
-                  <li>• Recycle and compost</li>
-                  <li>• Support sustainable brands</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* New Enhanced Components */}
+          <EmissionCharts emissions={emissions} totalEmissions={totalEmissions} />
+          <AchievementSystem totalEmissions={totalEmissions} emissions={emissions} />
+          <CarbonOffset totalEmissions={totalEmissions} />
+          <DetailedTips emissions={emissions} totalEmissions={totalEmissions} />
+        </div>
       )}
     </div>
   );
